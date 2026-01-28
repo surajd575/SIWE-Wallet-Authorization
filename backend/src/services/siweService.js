@@ -1,27 +1,27 @@
 import { SiweMessage } from "siwe";
-import crypto from "crypto";
-import { storeNonce } from "../models/nonceStore.js";
+import { ethers } from "ethers";
 
-export function createSiweMessage({ address, chainId, domain, uri}) {
+export function createSiweMessage({
 
-const nonce = crypto.randomBytes(16).toString("hex");
+  address,
+  chainId,
+  nonce,
+  domain,
+  uri
+}) {
+  const checksummedAdress = ethers.getAddress(address);
 
-storeNonce(address, nonce);
+  const message = new SiweMessage({
+    domain,
+    address: checksummedAdress,
+    statement: "Sign in securely using your ethereum wallet",
+    uri,
+    version: "1",
+    chainId: Number(chainId),
+    nonce,
+    issuedAt: new Date().toISOString(),
+    expirationTime: new Date(Date.now() + 5 * 60 * 1000).toISOString()
+  });
 
-const message = new SiweMessage({
-
-domain,
-address,
-statement: "Sign in Securely using your Ethereum wallet.",
-uri,
-version: "1",
-chainId,
-nonce,
-issuedAt: new Date().toISOString(),
-expirationTime: new Date(Date.now() + 5 * 60 * 1000).toISOString()
-
-});
-
-return message.prepareMessage();
-
+  return message.prepareMessage();
 }
