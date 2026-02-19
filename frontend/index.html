@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>SIWE Login</title>
+</head>
+<body>
+  <button id="login">Sign in with Ethereum</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    const backend = "http://localhost:4000";
+
+    async function login() {
+      if (!window.ethereum) {
+        alert("MetaMask required");
+        return;
+      }
+
+      const [address] = await ethereum.request({
+        method: "eth_requestAccounts"
+      });
+
+      const siweRes = await fetch(`${backend}/auth/siwe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address,
+          chainId: parseInt(await ethereum.request({ method: "eth_chainId" }), 16)
+        })
+      });
+
+      const { message } = await siweRes.json();
+
+      const signature = await ethereum.request({
+        method: "personal_sign",
+        params: [message, address]
+      });
+
+      const verifyRes = await fetch(`${backend}/auth/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, signature })
+      });
+
+      const result = await verifyRes.json();
+      document.getElementById("output").textContent =
+        JSON.stringify(result, null, 2);
+    }
+
+    document.getElementById("login").onclick = login;
+  </script>
+</body>
+</html>

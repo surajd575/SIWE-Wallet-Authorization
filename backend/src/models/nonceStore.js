@@ -1,25 +1,16 @@
-const nonceStore = new Map();
+const nonces = new Map();
 
 export function storeNonce(address, nonce) {
-
-    nonceStore.set(address.toLowerCase(), {
-        nonce, 
-        expiresAt: Date.now() + 5 * 60 * 1000
-     });
+  console.log("STORE NONCE:", address.toLowerCase(), nonce);
+  nonces.set(address.toLowerCase(), nonce);
 }
 
 export function getNonce(address) {
-    const entry = nonceStore.get(address.toLowerCase());
-    if (!entry) return null;
-
-    if (Date.now() > entry.expiresAt) {
-        nonceStore.delete(address.toLowerCase());
-        return null;
-    }
-
-    return entry.nonce;
+  console.log("GET NONCE FOR:", address.toLowerCase());
+  console.log("CURRENT NONCES:", nonces);
+  return nonces.get(address.toLowerCase()) || null;
 }
 
 export function deleteNonce(address) {
-    nonceStore.delete(address.toLowerCase());
+  nonces.delete(address.toLowerCase());
 }
